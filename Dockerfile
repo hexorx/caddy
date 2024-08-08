@@ -16,3 +16,4 @@ EXPOSE 80 443 22
 CMD tailscaled & \
   tailscale up --authkey=${TS_AUTH_KEY} --ssh && \
   caddy run --config /etc/caddy/Caddyfile --adapter caddyfile
+
