@@ -13,7 +13,5 @@ RUN curl -fsSL https://pkgs.tailscale.com/stable/alpine/tailscale_1.50.0_amd64.t
 EXPOSE 80 443 22
 
 # Set the command to run Tailscale and Caddy
-CMD tailscaled & \
-  tailscale up --authkey=${TS_AUTH_KEY} --ssh && \
-  caddy run --config /etc/caddy/Caddyfile --adapter caddyfile
+CMD ["sh", "-c", "tailscaled & tailscale up --authkey=${TS_AUTH_KEY} --ssh && caddy run --config /etc/caddy/Caddyfile --adapter caddyfile"]
 
