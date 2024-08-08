@@ -1,4 +1,4 @@
 :{$PORT}
 
-root * /srv
+root * /app/site
 file_server

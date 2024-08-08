@@ -1,17 +1,29 @@
-FROM caddy:alpine
+FROM caddy:2.8.4-builder AS builder
 
-COPY ./site/ /srv/
-COPY ./Caddyfile /etc/caddy/Caddyfile
+RUN xcaddy build \
+  --with github.com/greenpau/caddy-security \
+  --with github.com/caddy-dns/cloudflare
 
-# Install dependencies for Tailscale
-RUN apk add --no-cache iptables=1.8.7-r1 ip6tables=1.8.7-r1 curl=7.78.0-r0
+FROM caddy:2.8.4
 
-# Install Tailscale
-RUN curl -fsSL https://pkgs.tailscale.com/stable/alpine/tailscale_1.50.0_amd64.tgz | tar xz -C /usr/local/bin
+# Copy Caddy binary from the builder stage.
+COPY --from=builder /usr/bin/caddy /usr/bin/caddy
+COPY Caddyfile /etc/caddy/Caddyfile
 
-# Expose necessary ports
-EXPOSE 80 443 22
+# Copy Tailscale binaries from the tailscale image on Docker Hub.
+COPY --from=docker.io/tailscale/tailscale:stable /usr/local/bin/tailscaled /app/tailscaled
+COPY --from=docker.io/tailscale/tailscale:stable /usr/local/bin/tailscale /app/tailscale
+RUN mkdir -p /var/run/tailscale /var/cache/tailscale /var/lib/tailscale
 
-# Set the command to run Tailscale and Caddy
-CMD ["sh", "-c", "tailscaled & tailscale up --authkey=${TS_AUTH_KEY} --ssh && caddy run --config /etc/caddy/Caddyfile --adapter caddyfile"]
+# Copy the entrypoint script.
+COPY entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
+
+# Copy site files.
+COPY site /app/site
+
+# Add port for 80, 443, 443 udp, and 22
+EXPOSE 80 443 443/udp 22
+
+CMD ["/app/entrypoint.sh"]
 
