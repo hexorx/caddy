@@ -4,7 +4,7 @@ COPY ./site/ /srv/
 COPY ./Caddyfile /etc/caddy/Caddyfile
 
 # Install dependencies for Tailscale
-RUN apk add --no-cache iptables ip6tables curl
+RUN apk add --no-cache iptables=1.8.7-r1 ip6tables=1.8.7-r1 curl=7.78.0-r0
 
 # Install Tailscale
 RUN curl -fsSL https://pkgs.tailscale.com/stable/alpine/tailscale_1.50.0_amd64.tgz | tar xz -C /usr/local/bin
